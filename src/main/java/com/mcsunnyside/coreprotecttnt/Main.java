@@ -16,7 +16,9 @@ import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.entity.*;
+import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.projectiles.ProjectileSource;
@@ -245,7 +247,7 @@ public class Main extends JavaPlugin implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onEndCrystalHit(EntityDamageByEntityEvent e) {
+    public void onDamageByEntity(EntityDamageByEntityEvent e) {
         if (e.getEntityType() == EntityType.ENDER_CRYSTAL) {
             if (e.getDamager().getType() == EntityType.PLAYER) {
                 explosionSources.put(e.getEntity(), e.getDamager().getName());
@@ -259,6 +261,14 @@ public class Main extends JavaPlugin implements Listener {
                     }
                 }
             }
+            return;
+        }
+        if(e.getDamager().getType()==EntityType.PLAYER && e.getEntity().getType()==EntityType.ITEM_FRAME){
+            ItemFrame frame = (ItemFrame) e.getEntity();
+            if(frame.getItem().getType()==Material.AIR || frame.isInvulnerable()) return;
+            ItemStack removedItem = frame.getItem();
+            api.logRemoval("[-ITEM]"+e.getDamager().getName()+"["+removedItem.getType().name().toLowerCase()+"]", e.getEntity().getLocation(), Material.ITEM_FRAME, null);
+            api.logPlacement("[-ITEM]"+e.getDamager().getName()+"["+removedItem.getType().name().toLowerCase()+"]", e.getEntity().getLocation(), Material.ITEM_FRAME, null);
         }
     }
 
@@ -326,6 +336,30 @@ public class Main extends JavaPlugin implements Listener {
                 }
             }
         }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onClick(PlayerInteractAtEntityEvent e){
+        if(e.getRightClicked().getType()!= EntityType.ITEM_FRAME) return;
+        ItemFrame frame = (ItemFrame) e.getRightClicked();
+        Player p = e.getPlayer();
+        if(frame.getItem().getType()==Material.AIR) {
+            // ADD
+            if(p.getInventory().getItemInMainHand().getType()==Material.AIR && p.getInventory().getItemInOffHand().getType()==Material.AIR) return;
+            ItemStack addedItem;
+            if(p.getInventory().getItemInMainHand().getType()!=Material.AIR){
+                addedItem = p.getInventory().getItemInMainHand();
+            } else {
+                addedItem = p.getInventory().getItemInOffHand();
+            }
+            api.logRemoval("[+ITEM]"+p.getName()+"["+addedItem.getType().name().toLowerCase()+"]", frame.getLocation(), Material.ITEM_FRAME, null);
+            api.logRemoval("[+ITEM]"+p.getName()+"["+addedItem.getType().name().toLowerCase()+"]", frame.getLocation(), Material.ITEM_FRAME, null);
+            return;
+        }
+        // ROTATE
+        api.logInteraction(e.getPlayer().getName(), e.getRightClicked().getLocation());
+        api.logRemoval("[ROTATE]"+e.getPlayer().getName(), e.getRightClicked().getLocation(), Material.ITEM_FRAME, null);
+        api.logPlacement("[ROTATE]"+e.getPlayer().getName(), e.getRightClicked().getLocation(), Material.ITEM_FRAME, null);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
