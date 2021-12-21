@@ -50,8 +50,7 @@ public class Main extends JavaPlugin implements Listener {
             public void run() {
                 List<Location> blocks = ignitedBlocks.keySet()
                         .stream()
-                        .filter(block -> block.getBlock().getType() != Material.FIRE)
-                        .collect(Collectors.toList());
+                        .filter(block -> block.getBlock().getType() != Material.FIRE).toList();
                 if (!blocks.isEmpty()) {
                     new BukkitRunnable() {
                         @Override
