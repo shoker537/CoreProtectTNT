@@ -263,12 +263,12 @@ public class Main extends JavaPlugin implements Listener {
             }
             return;
         }
-        if(e.getDamager().getType()==EntityType.PLAYER && e.getEntity().getType()==EntityType.ITEM_FRAME){
+        if(e.getDamager().getType()==EntityType.PLAYER && (e.getEntity().getType()==EntityType.ITEM_FRAME || e.getEntity().getType()==EntityType.GLOW_ITEM_FRAME)){
             ItemFrame frame = (ItemFrame) e.getEntity();
             if(frame.getItem().getType()==Material.AIR || frame.isInvulnerable()) return;
             ItemStack removedItem = frame.getItem();
-            api.logRemoval("[-ITEM]"+e.getDamager().getName()+"["+removedItem.getType().name().toLowerCase()+"]", e.getEntity().getLocation(), Material.ITEM_FRAME, null);
-            api.logPlacement("[-ITEM]"+e.getDamager().getName()+"["+removedItem.getType().name().toLowerCase()+"]", e.getEntity().getLocation(), Material.ITEM_FRAME, null);
+            api.logRemoval("[-ITEM]"+e.getDamager().getName()+"["+removedItem.getType().name().toLowerCase()+"]", e.getEntity().getLocation(), Material.valueOf(e.getEntityType().name()), null);
+            api.logPlacement("[-ITEM]"+e.getDamager().getName()+"["+removedItem.getType().name().toLowerCase()+"]", e.getEntity().getLocation(), Material.valueOf(e.getEntityType().name()), null);
         }
     }
 
@@ -340,7 +340,7 @@ public class Main extends JavaPlugin implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onClick(PlayerInteractAtEntityEvent e){
-        if(e.getRightClicked().getType()!= EntityType.ITEM_FRAME) return;
+        if(e.getRightClicked().getType()!=EntityType.ITEM_FRAME && e.getRightClicked().getType()!=EntityType.GLOW_ITEM_FRAME) return;
         ItemFrame frame = (ItemFrame) e.getRightClicked();
         Player p = e.getPlayer();
         if(frame.getItem().getType()==Material.AIR) {
@@ -352,14 +352,14 @@ public class Main extends JavaPlugin implements Listener {
             } else {
                 addedItem = p.getInventory().getItemInOffHand();
             }
-            api.logRemoval("[+ITEM]"+p.getName()+"["+addedItem.getType().name().toLowerCase()+"]", frame.getLocation(), Material.ITEM_FRAME, null);
-            api.logRemoval("[+ITEM]"+p.getName()+"["+addedItem.getType().name().toLowerCase()+"]", frame.getLocation(), Material.ITEM_FRAME, null);
+            api.logRemoval("[+ITEM]"+p.getName()+"["+addedItem.getType().name().toLowerCase()+"]", frame.getLocation(), Material.valueOf(e.getRightClicked().getType().name()), null);
+            api.logRemoval("[+ITEM]"+p.getName()+"["+addedItem.getType().name().toLowerCase()+"]", frame.getLocation(), Material.valueOf(e.getRightClicked().getType().name()), null);
             return;
         }
         // ROTATE
         api.logInteraction(e.getPlayer().getName(), e.getRightClicked().getLocation());
-        api.logRemoval("[ROTATE]"+e.getPlayer().getName(), e.getRightClicked().getLocation(), Material.ITEM_FRAME, null);
-        api.logPlacement("[ROTATE]"+e.getPlayer().getName(), e.getRightClicked().getLocation(), Material.ITEM_FRAME, null);
+        api.logRemoval("[ROTATE]"+e.getPlayer().getName(), e.getRightClicked().getLocation(), Material.valueOf(e.getRightClicked().getType().name()), null);
+        api.logPlacement("[ROTATE]"+e.getPlayer().getName(), e.getRightClicked().getLocation(), Material.valueOf(e.getRightClicked().getType().name()), null);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
